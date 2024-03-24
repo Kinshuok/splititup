@@ -31,6 +31,31 @@ router.post("/creategroup",authMiddleware,async (req,res)=>{
 
 });
 
+router.post("/addmember", authMiddleware, async (req, res) => {
+    const groupId = req.query.groupId; // Access groupId from query parameters
+    const memberId = req.body.memberId;
+
+    try {
+        // Find the group by ID
+        console.log(groupId);
+        const group =await Group.findOne({
+            _id:groupId
+        })
+
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
+        }
+        if (group.members.includes(memberId)) {
+            return res.status(400).json({ message: 'Member already exists in the group' });
+        }
+        group.members.push(memberId);
+        await group.save();
+
+        res.status(200).json({ message: 'Member added to group successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
 
 module.exports=router;
