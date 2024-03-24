@@ -30,7 +30,7 @@ router.post("/creategroup",authMiddleware,async (req,res)=>{
     })
 
 });
-
+const abcd="123";
 router.post("/addmember", authMiddleware, async (req, res) => {
     const groupId = req.query.groupId; // Access groupId from query parameters
     const memberId = req.body.memberId;
