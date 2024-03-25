@@ -24,10 +24,12 @@ const ExpenseSchema =new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
     },
-    participants:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
-    }],
+    participants:[{user :{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+        amount_owed:Number
+}],
     group_id:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Group',
