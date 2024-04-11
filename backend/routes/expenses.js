@@ -4,20 +4,36 @@ const express = require('express');
 
 const router = express.Router();
 const zod = require("zod");
-const {  Expenses, Group} = require("../db");
+const {  Expenses, Group, User} = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
 const  { authMiddleware } = require("../middleware");
+
+async function getUserFirstNameById(userId) {
+    try {
+        const user = await User.findById(userId);
+        if (user) {
+            return user.firstName;
+        } else {
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        throw error;
+    }
+}
 
 router.post("/create-with-participants", authMiddleware, async (req, res) => {
     const body = req.body;
     const description = body.description;
     const amount = body.amount;
     const groupid = req.query.groupid;
-    const participants = body.participants; // Array of participant user IDs
+    const participants = body.participants; // Array of participant objects containing user IDs and names
     const userId = req.userId; // Current user ID
 
     try {
+        // Fetch the user's first name based on the user ID
+        const firstName = await getUserFirstNameById(userId);
+
         // Calculate the total number of participants including the current user
         const totalParticipants = participants.length + 1;
 
@@ -30,10 +46,10 @@ router.post("/create-with-participants", authMiddleware, async (req, res) => {
             total_amount: amount,
             created_by: userId,
             participants: [
-                // Include the current user as a participant with their owed amount
-                { user: userId, amount_owed: amountOwedPerParticipant },
-                // Include other participants with their owed amount (equal division)
-                ...participants.map(participantId => ({ user: participantId, amount_owed: amountOwedPerParticipant }))
+                // Include the current user as a participant with their owed amount and firstName
+                { user: userId, firstName: firstName, amount_owed: amountOwedPerParticipant },
+                // Include other participants with their owed amount and names
+                ...participants.map(participant => ({ user: participant.userId, firstName: participant.firstName, amount_owed: amountOwedPerParticipant }))
             ],
             group_id: groupid,
             settled_by: [userId],
@@ -48,6 +64,7 @@ router.post("/create-with-participants", authMiddleware, async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 router.get("/groupexpenses",authMiddleware,async (req,res)=>{
     const groupid=req.query.groupid;

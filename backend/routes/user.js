@@ -14,20 +14,21 @@ const signupBody = zod.object({
     lastName: zod.string(),
     password: zod.string()
 })
-router.get("/bulk", async (req, res) => {
+router.get("/bulk", authMiddleware,async (req, res) => {
     const filter = req.query.filter || "";
+    const loggedInUserId = req.userId; // Assuming req.userId contains the ID of the logged-in user
 
     const users = await User.find({
-        $or: [{
-            firstName: {
-                "$regex": filter
-            }
-        }, {
-            lastName: {
-                "$regex": filter
-            }
-        }]
-    })
+        $and: [
+            {
+                $or: [
+                    { firstName: { "$regex": filter } },
+                    { lastName: { "$regex": filter } }
+                ]
+            },
+            { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+    });
 
     res.json({
         user: users.map(user => ({
@@ -36,8 +37,9 @@ router.get("/bulk", async (req, res) => {
             lastName: user.lastName,
             _id: user._id
         }))
-    })
-})
+    });
+});
+
 router.post("/signup" ,async (req, res)=>{
     const { success } = signupBody.safeParse(req.body);
     if (!success) {
@@ -75,7 +77,9 @@ const signinBody = zod.object({
 })
 
 router.post("/signin",async (req, res)=>{
-    const {success}=signupBody.safeParse(req.body);
+    console.log(req.body);
+    const {success}=signinBody.safeParse(req.body);
+
     if (!success) {
         return res.status(411).json({
             message: "Email already taken / Incorrect inputs"

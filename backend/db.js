@@ -17,7 +17,8 @@ const GroupSchema =new mongoose.Schema({
         ref:'User',
     }]
 });
-const ExpenseSchema =new mongoose.Schema({
+const ExpenseSchema =new mongoose.Schema(
+    {
     description:String,
     total_amount: Number,
     created_by:{
@@ -25,9 +26,12 @@ const ExpenseSchema =new mongoose.Schema({
         ref:'User',
     },
     participants:[{user :{
+
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+
     },
+        firstName:String,
         amount_owed:Number
 }],
     group_id:{
