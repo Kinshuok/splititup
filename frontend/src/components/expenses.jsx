@@ -4,6 +4,8 @@ import {useSearchParams} from "react-router-dom";
 import axios from "axios";
 import {useRecoilState} from "recoil";
 import {totalMoneyLentState, totalMoneyOwedState} from "../../recoil.js";
+import {Creategroup} from "./Creategroup.jsx";
+import {CreateExpense} from "./CreateExpense.jsx";
 
 export function Expenses(){
     const [searchParams, setSearchParams] = useSearchParams();
@@ -13,6 +15,7 @@ export function Expenses(){
     const groupname=searchParams.get("groupname")
     const [totalmoney, setTotalMoney] = useRecoilState(totalMoneyLentState);
     const [moneyowed, setMoneyOwed] = useRecoilState(totalMoneyOwedState);
+    const [create, setCreate] = useState(false);
 
     useEffect( () => {
         axios.get(`http://localhost:3000/api/v1/expenses/groupexpenses?groupid=${groupId}`,{
@@ -68,18 +71,24 @@ export function Expenses(){
                 {expenses !== null && expenses.length > 0 && (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6 ">
                         {expenses.map(expense => (
-                            <div key={expense._id} className="max-w-md w-full bg-white shadow-md rounded-lg overflow-hidden mx-4 p-8 ">
+                            <div key={expense._id}
+                                 className="max-w-md w-full bg-white shadow-md rounded-lg overflow-hidden mx-4 p-8 ">
                                 <div className="text-xl font-semibold text-gray-800">{expense.description}</div>
                             </div>
                         ))}
                     </div>
                 )}
+                <div className="max-w-md w-full bg-white shadow-md rounded-lg overflow-hidden mx-4 p-8">
+                    <button onClick={() => setCreate(true)} className="text-xl font-semibold text-gray-800">Create
+                        Expense+
+                    </button>
+                </div>
+
+                {create && <CreateExpense onClose={() => { setCreate(false); }} />}
+            </div>
 
 
-              </div>
-
-
-       </div>
+        </div>
     </div>
 
 }

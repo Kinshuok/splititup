@@ -58,10 +58,6 @@ router.post("/creategroup", authMiddleware, async (req, res) => {
     }
 });
 
-module.exports = router;
-
-
-module.exports = router;
 
 router.post("/addmember", authMiddleware, async (req, res) => {
     const groupId = req.query.groupId; // Access groupId from query parameters
@@ -88,6 +84,25 @@ router.post("/addmember", authMiddleware, async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
+router.get("/groupmembers", authMiddleware, async (req, res) => {
+    const groupId = req.query.groupId; // Access groupId from query parameters);
+
+    try {
+        // Find the group by ID
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
+        }
+        const members = group.members;
+        //explain this part
+        const membersData = await User.find({ _id: { $in: members } });
+        res.status(200).json({ members: membersData });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 
 
 module.exports=router;
